@@ -1,3 +1,5 @@
+require 'netaddr'
+
 class Vsimple
     class VM
 
@@ -22,7 +24,7 @@ class Vsimple
             begin
                 @vm.PowerOnVM_Task.wait_for_completion
             rescue => e
-                raise Vsimple::Error.new "Power on vm #{@vm.name}:#{e.message}"
+                raise Vsimple::Error.new "Power on vm #{@vm.name}: #{e.message}"
             end
         end
 
@@ -30,7 +32,7 @@ class Vsimple
             begin
                 @vm.PowerOffVM_Task.wait_for_completion
             rescue => e
-                raise Vsimple::Error.new "Power off vm #{@vm.name}:#{e.message}"
+                raise Vsimple::Error.new "Power off vm #{@vm.name}: #{e.message}"
             end
         end
 
@@ -38,7 +40,7 @@ class Vsimple
             begin
                 @vm.ShutdownGuest
             rescue => e
-                raise Vsimple::Error.new "Shutdown vm #{@vm.name}:#{e.message}"
+                raise Vsimple::Error.new "Shutdown vm #{@vm.name}: #{e.message}"
             end
         end
 
@@ -50,7 +52,7 @@ class Vsimple
             begin
                 @vm.RebootGuest
             rescue => e
-                raise Vsimple::Error.new "RebootGuest vm #{@vm.name}:#{e.message}"
+                raise Vsimple::Error.new "RebootGuest vm #{@vm.name}: #{e.message}"
             end
         end
 
@@ -106,11 +108,15 @@ class Vsimple
             clone_spec  = generate_clone_spec(vm_config)
             dest_folder = Vsimple::Config[:dc].vmFolder.traverse!(vm_config[:path], RbVmomi::VIM::Folder)
 
-            @vm.CloneVM_Task(
-                :folder => dest_folder,
-                :name   => name,
-                :spec   => clone_spec
-            ).wait_for_completion
+            begin
+                @vm.CloneVM_Task(
+                    :folder => dest_folder,
+                    :name   => name,
+                    :spec   => clone_spec
+                ).wait_for_completion
+            rescue => e
+                raise Vsimple::Error.new "Clone vm #{@vm.name}: #{e.message}"
+            end
 
             Vsimple::VM.new("#{vm_config[:path]}/#{name}")
         end
@@ -251,7 +257,6 @@ class Vsimple
             end
 
             src_cards.each do |name|
-                puts name
                 if vm_config[:network]
                     config = vm_config[:network][name]
                 else

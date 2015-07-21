@@ -1,8 +1,6 @@
 # Vsimple
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/vsimple`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+Simple version of rbvmomi easy to use vpshere.
 
 ## Installation
 
@@ -22,7 +20,36 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+```
+require "vsimple"
+
+config = {
+    :host => "172.16.1.1",
+    :user => "USER",
+    :pass => "PASS"
+}
+
+Vsimple.connect(config)
+
+Vsimple.set_dc("DATACENTER")
+Vsimple.set_cluster("cluster")
+
+vm = Vsimple::VM.new("template/debian-7.3-amd64")
+begin
+    vm.clone("vms/new_vm.vsimple.fr", {
+        :powerOn => true,
+        :network => {
+            "Network adapter 1" => {
+                :port_group => "ext",
+                :ip         => "192.168.42.42/24",
+                :gw         => "192.168.42.254",
+            }
+        }
+    })
+rescue Vsimple::Error => e
+    puts e.msg
+end
+```
 
 ## Development
 
@@ -32,7 +59,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-1. Fork it ( https://github.com/[my-github-username]/vsimple/fork )
+1. Fork it ( https://github.com/etna-alternance/vsimple )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
